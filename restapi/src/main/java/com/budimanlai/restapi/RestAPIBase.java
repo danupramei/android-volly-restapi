@@ -6,6 +6,7 @@ import android.util.Log;
 import android.util.LruCache;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -97,7 +98,7 @@ public class RestAPIBase {
     /**
      * Add single header key
      *
-     * @param key String header field name
+     * @param key   String header field name
      * @param value String header value
      */
     public void setHeader(String key, String value) {
@@ -136,7 +137,9 @@ public class RestAPIBase {
     }
 
     public RestAPIListenerInterface getListener() {
-        if (mListener == null) { mListener = new RestAPIJSONListener(); }
+        if (mListener == null) {
+            mListener = new RestAPIJSONListener();
+        }
         return mListener;
     }
 
@@ -146,18 +149,22 @@ public class RestAPIBase {
      * @param message String
      */
     protected void log(String message) {
-        if (mDebug) { Log.d(TAG, message); }
+        if (mDebug) {
+            Log.d(TAG, message);
+        }
     }
 
     /**
      * Send POST Raw JSON to endpoint
      *
-     * @param url String
+     * @param url    String
      * @param params Map<String, String> params
      */
     protected void stringRequest(int method, final String url, final JSONObject params, String tag, final RestAPIListenerInterface listener, final RestAPIResponseInterface handler) {
-        log("URL: " + url);
-        log("Params: " + params.toString());
+        log("URL: " + getUrl(url));
+        log("Endpoint: " + url);
+        log("Headers: " + mHeaders);
+        log("Body: " + params.toString());
 
         StringRequest stringRequest = new StringRequest(method, getUrl(url), new Response.Listener<String>() {
             @Override
@@ -168,8 +175,10 @@ public class RestAPIBase {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                log("onError: " + error.getMessage());
-                listener.onErrorHandler(error, handler);
+                Log.e("VOLLEY", "onError: "+error.toString());
+                if (error.networkResponse != null) {
+                    Log.e("VOLLEY", "Status Code: " + error.networkResponse.statusCode);
+                }
             }
         }) {
             @Override
@@ -187,6 +196,11 @@ public class RestAPIBase {
             }
         };
 
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                30000, // 20 detik
+                0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
         this.addToRequestQueue(stringRequest, tag);
     }
 
