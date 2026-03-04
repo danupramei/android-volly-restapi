@@ -191,7 +191,7 @@ public class RestAPIBase {
                 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         ));
-
+        log("Timeout set to: " + jsonRequest.getRetryPolicy().getCurrentTimeout());
         addToRequestQueue(jsonRequest, tag);
     }
 
