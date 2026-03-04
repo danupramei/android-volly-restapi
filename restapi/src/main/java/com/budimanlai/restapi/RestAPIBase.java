@@ -12,6 +12,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -166,42 +167,32 @@ public class RestAPIBase {
         log("Headers: " + mHeaders);
         log("Body: " + params.toString());
 
-        StringRequest stringRequest = new StringRequest(method, getUrl(url), new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                log("onResponse: " + response);
-                listener.onSuccessHandler(response, handler);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("VOLLEY", "onError: "+error.toString());
-                if (error.networkResponse != null) {
-                    Log.e("VOLLEY", "Status Code: " + error.networkResponse.statusCode);
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(
+                method,
+                getUrl(url),
+                params,
+                response -> {
+                    log("onResponse: " + response.toString());
+                    listener.onSuccessHandler(response.toString(), handler);
+                },
+                error -> {
+                    Log.e("VOLLEY_ERROR", error.toString());
+                    listener.onErrorHandler(error, handler);
                 }
-            }
-        }) {
+        ) {
             @Override
-            public byte[] getBody() throws com.android.volley.AuthFailureError {
-                return params.toString().getBytes();
-            }
-
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
+            public Map<String, String> getHeaders() {
                 return RestAPIBase.this.getHeaders();
             }
         };
 
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                30000, // 20 detik
+        jsonRequest.setRetryPolicy(new DefaultRetryPolicy(
+                30000,
                 0,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         ));
-        this.addToRequestQueue(stringRequest, tag);
+
+        addToRequestQueue(jsonRequest, tag);
     }
 
     public String getUrl(String url) {
