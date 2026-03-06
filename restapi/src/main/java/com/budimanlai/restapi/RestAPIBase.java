@@ -176,7 +176,13 @@ public class RestAPIBase {
                     listener.onSuccessHandler(response.toString(), handler);
                 },
                 error -> {
-                    Log.e("VOLLEY_ERROR", error.toString());
+                    if (error.networkResponse != null) {
+                        Log.e("VOLLEY_ERROR", "Status: " + error.networkResponse.statusCode);
+                        Log.e("VOLLEY_ERROR", new String(error.networkResponse.data));
+                    } else {
+                        Log.e("VOLLEY_ERROR", error.toString());
+                    }
+
                     listener.onErrorHandler(error, handler);
                 }
         ) {
