@@ -69,7 +69,7 @@ public class RestAPIBase {
         if (mRequestQueue == null) {
             // getApplicationContext() is key, it keeps you from leaking the
             // Activity or BroadcastReceiver if someone passes one in.
-            mRequestQueue = Volley.newRequestQueue(mContext.getApplicationContext());
+            mRequestQueue = Volley.newRequestQueue(mContext.getApplicationContext(), new CustomHurlStack());
         }
         return mRequestQueue;
     }
@@ -178,9 +178,13 @@ public class RestAPIBase {
                 error -> {
                     if (error.networkResponse != null) {
                         Log.e("VOLLEY_ERROR", "Status: " + error.networkResponse.statusCode);
-                        Log.e("VOLLEY_ERROR", new String(error.networkResponse.data));
+                        Log.e("VOLLEY_ERROR", "error networkResponse: "+ new String(error.networkResponse.data));
                     } else {
-                        Log.e("VOLLEY_ERROR", error.toString());
+                        Log.e("VOLLEY_ERROR", "error: "+error.toString());
+                    }
+
+                    if (error.getCause() != null) {
+                        Log.e("VOLLEY_ERROR", "error cause: "+error.getCause().toString());
                     }
 
                     listener.onErrorHandler(error, handler);
