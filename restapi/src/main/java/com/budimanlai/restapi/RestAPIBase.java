@@ -121,6 +121,7 @@ public class RestAPIBase {
      * @return Map<String, String>
      */
     public Map<String, String> getHeaders() {
+        mHeaders.put("User-Agent", "Android");
         return mHeaders;
     }
 
