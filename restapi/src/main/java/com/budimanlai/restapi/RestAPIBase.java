@@ -184,6 +184,11 @@ public class RestAPIBase {
             public Map<String, String> getHeaders() {
                 return RestAPIBase.this.getHeaders();
             }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
         };
 
         jsonRequest.setRetryPolicy(new DefaultRetryPolicy(
